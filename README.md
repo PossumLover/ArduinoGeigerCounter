@@ -7,4 +7,4 @@ Uses a M4011 tube with the RadiationD-v1.1 (CAJOE) that can be purchased easily 
 
 ## How to set-up 
 
-The CAJOE module can be run from the Arudino 5V supply. I have used Pin 2 for the VIN output. I will connect the display down the track. 
+The CAJOE module can be run from the Arudino 5V supply. I have used Pin 2 for the VIN output. Outputs total clicks and time since program start to LCD screen to allow for easy calculation of average clicks per minute.
