@@ -31,6 +31,8 @@
   License: MIT License 
 
   Code edits done by James Warner :)
+  
+  https://github.com/PossumLover/ArduinoGeigerCounter
 
 */
 
