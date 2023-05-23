@@ -65,17 +65,20 @@ void setup() {
   lcd.begin(16, 2);
 }
 
+// Interrupt service routine for the Geiger counter
 void loop() {
   unsigned long currentMillis = millis();
   unsigned long elapsedTime = currentMillis - programStartTime; // Calculate elapsed time
 
-  if (currentMillis - previousMillis >= 1000) {
-    float cps = (float)count / ((currentMillis - previousMillis) / 1000.0);
-    cpm = (int)(cps * 60.0);
+  if (currentMillis - previousMillis >= 1000) { // Every second
+    float cps = (float)count / ((currentMillis - previousMillis) / 1000.0); // Calculate counts per second
+    cpm = (int)(cps * 60.0); // Convert counts per second to counts per minute
 
+    // Add current CPM to weighted moving average
     weightedCpm[currentIndex] = cpm;
     currentIndex = (currentIndex + 1) % windowSize;
 
+    // Calculate weighted moving average of CPM
     float weightedSum = 0.0;
     float weightSum = 0.0;
     for (int i = 0; i < windowSize; i++) {
@@ -87,7 +90,7 @@ void loop() {
 
     totalcount += count;
 
-    microsieverts = weightedAverageCpm / 151.0;
+    microsieverts = weightedAverageCpm / 151.0; // Convert CPM to microsieverts per hour, conversion factor for this geiger tube is 151 clicks = 1 uSv/H
 
     // Print results via serial
     Serial.print("Time: ");
@@ -101,7 +104,6 @@ void loop() {
     Serial.print(", uSv/H: ");
     Serial.println(microsieverts);
 
-
     // Update LCD
     lcd.setCursor(0, 0);
     lcd.print("Time: ");
@@ -112,8 +114,8 @@ void loop() {
     lcd.print("Clicks: ");
     lcd.print(totalcount);
 
-    count = 0;
-    previousMillis = currentMillis;
+    count = 0; // Reset count
+    previousMillis = currentMillis; // Update previous time
   }
 }
 
