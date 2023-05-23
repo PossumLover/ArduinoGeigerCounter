@@ -30,14 +30,20 @@
   E-mail: sebyon2@gmail.com
   License: MIT License 
 
+  Code edits done by James Warner :)
+
 */
 
 #define Version "V1.0.0"
+
+#include <LiquidCrystal.h>
 
 // Pin definitions and variables
 const int geigerPin = 2; // Pin number for the Geiger counter
 volatile int count = 0; // Variable to keep track of the count
 unsigned long previousMillis = 0; // Variable to keep track of the previous time
+unsigned long totalcount = 0; // Variable to keep track of the total count
+unsigned long programStartTime = 0; // Variable to store the program start time
 int cpm = 0; // Variable to keep track of the counts per minute
 float microsieverts = 0.0; // Variable to keep track of the microsieverts per hour
 
@@ -47,26 +53,29 @@ float weights[windowSize] = {0.0333, 0.0667, 0.1, 0.1333, 0.1667, 0.2, 0.1667, 0
 float weightedCpm[windowSize]; // Array to store previous CPM values for the moving average filter
 int currentIndex = 0; // Index of the current value in the moving average filter
 
+LiquidCrystal lcd(9, 8, 7, 6, 5, 3);
+
 void setup() {
   pinMode(geigerPin, INPUT);
   attachInterrupt(digitalPinToInterrupt(geigerPin), pulse, FALLING);
-  
+
   Serial.begin(9600);
+  programStartTime = millis(); // Store the program start time
+
+  lcd.begin(16, 2);
 }
 
-// Interrupt service routine for the Geiger counter
 void loop() {
   unsigned long currentMillis = millis();
+  unsigned long elapsedTime = currentMillis - programStartTime; // Calculate elapsed time
 
-  if (currentMillis - previousMillis >= 1000) { // Every second
-    float cps = (float)count / ((currentMillis - previousMillis) / 1000.0); // Calculate counts per second
-    cpm = (int)(cps * 60.0); // Convert counts per second to counts per minute
-    
-    // Add current CPM to weighted moving average
+  if (currentMillis - previousMillis >= 1000) {
+    float cps = (float)count / ((currentMillis - previousMillis) / 1000.0);
+    cpm = (int)(cps * 60.0);
+
     weightedCpm[currentIndex] = cpm;
     currentIndex = (currentIndex + 1) % windowSize;
-    
-    // Calculate weighted moving average of CPM
+
     float weightedSum = 0.0;
     float weightSum = 0.0;
     for (int i = 0; i < windowSize; i++) {
@@ -75,17 +84,36 @@ void loop() {
       weightSum += weights[i];
     }
     float weightedAverageCpm = weightedSum / weightSum;
-    
-    microsieverts = weightedAverageCpm / 151.0; // Convert CPM to microsieverts per hour
-    
+
+    totalcount += count;
+
+    microsieverts = weightedAverageCpm / 151.0;
+
     // Print results via serial
-    Serial.print("CPM: ");
+    Serial.print("Time: ");
+    Serial.print(elapsedTime / 1000); // Convert milliseconds to seconds
+    Serial.print(", Clicks: ");
+    Serial.print(totalcount);
+    Serial.print(", Change: ");
+    Serial.print(count);
+    Serial.print(", CPM: ");
     Serial.print((int)weightedAverageCpm);
-    Serial.print(", µSv/H: ");
+    Serial.print(", uSv/H: ");
     Serial.println(microsieverts);
-    
-    count = 0; // Reset count
-    previousMillis = currentMillis; // Update previous time
+
+
+    // Update LCD
+    lcd.setCursor(0, 0);
+    lcd.print("Time: ");
+    lcd.print(elapsedTime / 1000);
+    lcd.print("s");
+
+    lcd.setCursor(0, 1);
+    lcd.print("Clicks: ");
+    lcd.print(totalcount);
+
+    count = 0;
+    previousMillis = currentMillis;
   }
 }
 
