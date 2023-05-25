@@ -24,14 +24,14 @@
   Uses a rolling weigted average filter with a window of 10 to reduce random spikes. This does have the effect
   on responce time however for the digital output, but it remains indepentent of the buzzer output. 
 
-  Outputs total clicks and time since program start to LCD screen to allow for easy calculation of average clicks per minute.
+  Will add a display output soon. 
 
   Author: Sebastian D'Hyon
   E-mail: sebyon2@gmail.com
   License: MIT License 
 
   Code edits done by James Warner :)
-  
+
   https://github.com/PossumLover/ArduinoGeigerCounter
 
 */
